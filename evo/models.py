@@ -7,7 +7,7 @@ from stripedhyena.model import StripedHyena
 from stripedhyena.tokenizer import CharLevelTokenizer
 
 
-MODEL_NAMES = ['evo-1-8k-base', 'evo-1-131k-base']
+MODEL_NAMES = ['evo-1-8k-base', 'evo-1-131k-base', 'quant-evo']
 
 class Evo:
     def __init__(self, model_name: str = MODEL_NAMES[1], device: str = None):
@@ -27,7 +27,7 @@ class Evo:
 
         # Assign config path.
 
-        if model_name == 'evo-1-8k-base':
+        if model_name in ['evo-1-8k-base', 'quant-evo']:
             config_path = 'configs/evo-1-8k-base_inference.yml'
         elif model_name == 'evo-1-131k-base':
             config_path = 'configs/evo-1-131k-base_inference.yml'
@@ -49,10 +49,11 @@ class Evo:
 
         self.tokenizer = CharLevelTokenizer(512)
 
-        
+
 HF_MODEL_NAME_MAP = {
     'evo-1-8k-base': 'togethercomputer/evo-1-8k-base',
     'evo-1-131k-base': 'togethercomputer/evo-1-131k-base',
+    'quant-evo': 'monsoon-nlp/quant-evo',
 }
 
 def load_checkpoint(
@@ -70,11 +71,14 @@ def load_checkpoint(
     hf_model_name = HF_MODEL_NAME_MAP[model_name]
 
     # Load model config.
+    revision = 'main'
+    if model_name != 'quant-evo':
+        revision = '1.1_fix'
 
     model_config = AutoConfig.from_pretrained(
         hf_model_name,
         trust_remote_code=True,
-        revision='1.1_fix',
+        revision=revision,
     )
     model_config.use_cache = True
 
@@ -84,7 +88,7 @@ def load_checkpoint(
         hf_model_name,
         config=model_config,
         trust_remote_code=True,
-        revision='1.1_fix',
+        revision=revision,
     )
 
     # Load model state dict & cleanup.
