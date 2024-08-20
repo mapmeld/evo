@@ -106,7 +106,8 @@ def load_checkpoint(
 
     model = StripedHyena(global_config)
     model.load_state_dict(state_dict, strict=True)
-    model.to_bfloat16_except_poles_residues()
+    if 'quant' not in hf_model_name:
+        model.to_bfloat16_except_poles_residues()
     if device is not None:
         model = model.to(device)
 
